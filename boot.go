@@ -1,13 +1,21 @@
 package main
 
-/*import (
-	"fmt"
-	"flag"
-	"io/ioutil"
-)*/
+import (
+	//"fmt"
+	//"flag"
+	//"io/ioutil"
+	"github.com/joemahmah/DRAWR/containers"
+	"github.com/joemahmah/DRAWR/parsers"
+)
 
 func main() {
 
+	var testCont containers.Pixel
+	var testPars parsers.NeedsAName
+
+	_ = testCont
+	_ = testPars
+	
 	//Decl Run Param Vars
 	//Interprate flags
 	
