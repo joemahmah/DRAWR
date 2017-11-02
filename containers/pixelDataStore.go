@@ -21,21 +21,31 @@ type PixelData interface{
 }
 
 type SimplePixelData struct {
-	pixelBelow	[]Pixel
-	pixelRight	[]Pixel
+	PixelBelow	[]Pixel
+	PixelRight	[]Pixel
 	
-	color		Pixel
+	Color		Pixel
 }
 
 type DataManager interface{
 	GetPixelData(Pixel) (PixelData, error)
-	SetPixelData(Pixel,PixelData) error
+	GetPixelDataCreateIfNotExist(Pixel) PixelData
 }
 
 type SimpleDataManager struct {
-	data		map[Pixel]SimplePixelData
+	Data		map[Pixel]*SimplePixelData
 }
 
+/////////////
+//Functions//
+/////////////
+
+func MakeSimpleDataManager() SimpleDataManager{
+	var sdm SimpleDataManager
+	sdm.Data = make(map[Pixel]*SimplePixelData)
+	
+	return sdm
+}
 
 ///////////
 //Methods//
@@ -77,29 +87,37 @@ func (p *Pixel) IsEdge() bool{
 
 //SimplePixelData
 func (p *SimplePixelData) AddPixelBelow(pixel Pixel){
-	p.pixelBelow = append(p.pixelBelow, pixel)
+	p.PixelBelow = append(p.PixelBelow, pixel)
 }
 
 func (p *SimplePixelData) AddPixelRight(pixel Pixel){
-	p.pixelRight = append(p.pixelRight, pixel)
+	p.PixelRight = append(p.PixelRight, pixel)
 }
 
 func (p *SimplePixelData) GetColor() Pixel {
-	return p.color
+	return p.Color
 }
 
 
 //SimpleDataManager
 func (dm *SimpleDataManager) GetPixelData(pixel Pixel) (PixelData,error) {
-	pixelData, exists := dm.data[pixel]
+	pixelData, exists := dm.Data[pixel]
 	
 	if(!exists){
 		return nil,errors.New("Pixel has not been stored")
 	}
 	
-	return &pixelData,nil
+	return pixelData,nil
 }
 
-func (dm *SimpleDataManager) SetPixelData(pixel Pixel, pixelData PixelData) error {
-	return nil
+func (dm *SimpleDataManager) GetPixelDataCreateIfNotExist(pixel Pixel) PixelData{
+	pixelData, exists := dm.Data[pixel]
+	
+	if(!exists){
+		dm.Data[pixel] = new(SimplePixelData)
+		pixelData, _ = dm.Data[pixel]
+	}
+	
+	
+	return pixelData
 }

@@ -6,6 +6,7 @@ import (
 	_ "image/jpeg"
 	"os"
 	"github.com/joemahmah/DRAWR/containers"
+	//"fmt"
 )
 
 type Parser interface{
@@ -18,8 +19,8 @@ type Parser interface{
 }
 
 type SimpleParser struct {
-	img			image.Image
-	storage		containers.SimpleDataManager
+	Img			image.Image
+	Storage		containers.SimpleDataManager
 }
 
 /////////////
@@ -46,7 +47,7 @@ func (parser *SimpleParser) LoadImage(path string) error {
 	}
 	
 	//Load the image
-	parser.img, _, err = image.Decode(file)
+	parser.Img, _, err = image.Decode(file)
 	
 	//If error while loading, return error
 	if(err != nil){
@@ -57,34 +58,45 @@ func (parser *SimpleParser) LoadImage(path string) error {
 }
 
 func (parser *SimpleParser)	SetStorage(container containers.SimpleDataManager) {
-	parser.storage = container
+	parser.Storage = container
 }
 
 func (parser *SimpleParser) Parse() error{
 
-	imageBounds := parser.img.Bounds()
+	imageBounds := parser.Img.Bounds()
 	boundsX, boundsY := imageBounds.Max.X, imageBounds.Max.Y
 
 	var currentPixel containers.Pixel
-	_ = currentPixel //"currentPixel declared and not used" even with loop below...
+	_ = currentPixel //"currentPixel declared and not used" even with loop below...	
+	
+	var leftPixel containers.Pixel
+	var upPixel containers.Pixel
+	
+	_ = leftPixel
+	_ = upPixel
 	
     for y := 0; y < boundsY; y++ {
         for x := 0; x < boundsX; x++ {
-			currentPixel = convert32BitRGBAtoPixel(parser.img.At(x,y).RGBA()) //Current pixel at (x,y)
+			currentPixel = convert32BitRGBAtoPixel(parser.Img.At(x,y).RGBA()) //Current pixel at (x,y)
 			
+			//Set left pixel
 			if(x == 0){
-				//get left bound from DM
-				//add this pixel
+				leftPixel = parser.GetLeftBound()
 			} else {
-				//get left x-1,y from DM
-				//add this pixel
+				leftPixel = convert32BitRGBAtoPixel(parser.Img.At(x-1,y).RGBA())
 			}
 			
+			//Set up pixel
 			if(y == 0){
-				
+				upPixel = parser.GetUpperBound()
 			} else {
-				
+				upPixel = convert32BitRGBAtoPixel(parser.Img.At(x,y-1).RGBA())
 			}
+			
+			//Update data for left pixel
+			parser.Storage.GetPixelDataCreateIfNotExist(leftPixel).AddPixelRight(currentPixel)
+			//Update data for up pixel
+			parser.Storage.GetPixelDataCreateIfNotExist(upPixel).AddPixelBelow(currentPixel)
         }
     }
 	
