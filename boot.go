@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	//"flag"
 	//"io/ioutil"
 	"github.com/joemahmah/DRAWR/containers"
@@ -10,11 +10,21 @@ import (
 
 func main() {
 
-	var testCont containers.Pixel
 	var testPars parsers.SimpleParser
-
-	_ = testCont
-	_ = testPars
+	data := containers.MakeSimpleDataManager()
+	
+	testPars.SetStorage(data)
+	err := testPars.LoadImage("test.png")
+	
+	if(err != nil){
+		fmt.Println("ERROR: ", err)
+	}
+	
+	testPars.Parse()
+	
+	for key, value := range testPars.Storage.Data{
+		fmt.Println("Key: " , key, "\nValue: ", value)
+	}
 	
 	//Decl Run Param Vars
 	//Interprate flags
