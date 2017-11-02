@@ -11,7 +11,7 @@ import (
 func main() {
 
 	var testCont containers.Pixel
-	var testPars parsers.NeedsAName
+	var testPars parsers.SimpleParser
 
 	_ = testCont
 	_ = testPars
