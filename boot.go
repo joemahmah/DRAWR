@@ -6,10 +6,14 @@ import (
 	//"io/ioutil"
 	"github.com/joemahmah/DRAWR/containers"
 	"github.com/joemahmah/DRAWR/parsers"
+	"github.com/joemahmah/DRAWR/generators"
 )
 
 func main() {
 
+	var testGen generators.SimpleGenerator
+	_ = testGen
+	
 	var testPars parsers.SimpleParser
 	data := containers.MakeSimpleDataManager()
 	
