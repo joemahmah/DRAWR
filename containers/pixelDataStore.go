@@ -10,7 +10,7 @@ type Pixel struct {
 	B		byte
 	A		byte
 	
-	edge	byte //0 = no, 1 = left, 2 = top
+	Edge	byte //0 = no, 1 = left, 2 = top
 }
 
 type PixelData interface{
@@ -60,7 +60,7 @@ func (p *Pixel) SetAlpha(a byte){
 }
 
 func (p *Pixel) SetEdge(e byte){
-	p.edge = e
+	p.Edge = e
 }
 
 func (p *Pixel) getRGB() (byte,byte,byte){
@@ -72,7 +72,7 @@ func (p *Pixel) getRGBA() (byte,byte,byte,byte){
 }
 
 func (p *Pixel) IsEdge() bool{
-	return p.edge != 0
+	return p.Edge != 0
 }
 
 //SimplePixelData
