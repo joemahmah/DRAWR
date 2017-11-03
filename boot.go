@@ -11,13 +11,12 @@ import (
 
 func main() {
 
-	var testGen generators.SimpleGenerator
-	_ = testGen
-	
+	testGen := generators.MakeSimpleGenerator(300,300) //testGen is pointer
 	var testPars parsers.SimpleParser
-	data := containers.MakeSimpleDataManager()
+	data := containers.MakeSimpleDataManager() //data is a pointer
 	
-	testPars.SetStorage(data)
+	
+	testPars.SetStorage(*data)
 	err := testPars.LoadImage("test.png")
 	
 	if(err != nil){
@@ -26,9 +25,13 @@ func main() {
 	
 	testPars.Parse()
 	
-	for key, value := range testPars.Storage.Data{
-		fmt.Println("Key: " , key, "\nValue: ", value)
-	}
+	testGen.SetStorage(testPars.Storage)
+	
+	generators.UseNoexpGen = false;
+	
+	testGen.Generate()
+	testGen.SaveImage("imgOut.png")
+	
 	
 	//Decl Run Param Vars
 	//Interprate flags

@@ -11,7 +11,6 @@ import (
 
 type Parser interface{
 	LoadImage(string) error
-	SetStorage(containers.DataManager)
 	Parse() error
 	
 	GetUpperBound() containers.Pixel
@@ -40,6 +39,7 @@ func convert32BitRGBAtoPixel(r,g,b,a uint32) containers.Pixel{
 func (parser *SimpleParser) LoadImage(path string) error {
 	//Open the file specified by path
 	file, err := os.Open(path)
+	defer file.Close()
 	
 	//If error while reading, return error
 	if(err != nil){

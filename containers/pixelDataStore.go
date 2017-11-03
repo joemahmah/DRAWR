@@ -2,7 +2,17 @@ package containers
 
 import (
 	"errors"
+	"math/rand"
+	"time"
 )
+
+var RandomGen *rand.Rand
+
+
+//Package Init//
+func init(){
+	RandomGen = rand.New(rand.NewSource(time.Now().UnixNano()))
+}
 
 type Pixel struct {
 	R		byte
@@ -16,6 +26,10 @@ type Pixel struct {
 type PixelData interface{
 	AddPixelBelow(Pixel)
 	AddPixelRight(Pixel)
+	GetPixelsBelow() []Pixel
+	GetPixelsRight() []Pixel
+	GetRandomPixelBelow() Pixel
+	GetRandomPixelRight() Pixel
 	
 	GetColor() Pixel
 }
@@ -40,8 +54,8 @@ type SimpleDataManager struct {
 //Functions//
 /////////////
 
-func MakeSimpleDataManager() SimpleDataManager{
-	var sdm SimpleDataManager
+func MakeSimpleDataManager() *SimpleDataManager{
+	sdm := new(SimpleDataManager)
 	sdm.Data = make(map[Pixel]*SimplePixelData)
 	
 	return sdm
@@ -98,6 +112,21 @@ func (p *SimplePixelData) GetColor() Pixel {
 	return p.Color
 }
 
+func (p *SimplePixelData) GetPixelsBelow() []Pixel{
+	return p.PixelBelow
+}
+
+func (p *SimplePixelData) GetPixelsRight() []Pixel{
+	return p.PixelRight
+}
+
+func (p *SimplePixelData) GetRandomPixelBelow() Pixel{
+	return p.PixelBelow[RandomGen.Intn(len(p.PixelBelow))]
+}
+
+func (p *SimplePixelData) GetRandomPixelRight() Pixel{
+	return p.PixelRight[RandomGen.Intn(len(p.PixelRight))]
+}
 
 //SimpleDataManager
 func (dm *SimpleDataManager) GetPixelData(pixel Pixel) (PixelData,error) {
