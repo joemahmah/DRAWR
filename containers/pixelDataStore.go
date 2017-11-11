@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/rand"
 	"time"
+	//"fmt"
 )
 
 var RandomGen *rand.Rand
@@ -37,14 +38,17 @@ type PixelTreeNode struct {
 }
 
 type PixelTree struct {
-	RootNode *PixelTreeNode
+	RootNode 	*PixelTreeNode
+	NodeSlice	[]PixelTreeNode
+	IsFlat		bool
+	TotalCount	int64 //Summation of node.count for all nodes in the nodeslice
 }
 
 type PixelData interface{
 	AddPixelBelow(Pixel)
 	AddPixelRight(Pixel)
-	GetPixelsBelow() []Pixel
-	GetPixelsRight() []Pixel
+	GetPixelsBelow() *PixelTree
+	GetPixelsRight() *PixelTree
 	GetRandomPixelBelow() Pixel
 	GetRandomPixelRight() Pixel
 	
@@ -52,8 +56,8 @@ type PixelData interface{
 }
 
 type SimplePixelData struct {
-	PixelBelow	[]Pixel
-	PixelRight	[]Pixel
+	PixelBelow	PixelTree
+	PixelRight	PixelTree
 	
 	Color		Pixel
 }
@@ -232,6 +236,55 @@ func (node *PixelTreeNode) GetCount(pixel Pixel) (int, error){
 	return 0, errors.New("Node does not exist.")
 }
 
+//returns the node with key pixel (if not exist, nil)
+func (node *PixelTreeNode) GetNodeSlice() []PixelTreeNode{
+	nodeSlice := make([]PixelTreeNode,0)
+	
+	if(node.LeftNode != nil){
+		nodeSlice = append(nodeSlice, *node.LeftNode)
+	}
+	
+	nodeSlice = append(nodeSlice, *node)
+	//fmt.Println("NODE: ", node.Key)
+	
+	if(node.RightNode != nil){
+		nodeSlice = append(nodeSlice, *node.RightNode)
+	}
+	
+	//Should never hit here
+	return nodeSlice
+}
+
+//returns if a node with key pixel is in tree
+func (node *PixelTreeNode) Contains(pixel Pixel) bool{
+	relation := GetPixelRelation(&node.Key, &pixel)
+	
+	switch relation {
+	case PixelEqual:
+		return true
+		
+	case PixelGreater:
+		if(node.RightNode == nil){ //If node empty
+			return false
+		} else { //If node full
+			return node.RightNode.Contains(pixel)
+		}
+	
+	case PixelLess:
+		if(node.LeftNode == nil){ //If node empty
+			return false
+		} else { //If node full
+			return node.LeftNode.Contains(pixel)
+		}
+
+	default:
+		return false
+	}
+	
+	//Should never hit here
+	return false
+}
+
 //PixelTree
 func (tree *PixelTree) Add(pixel Pixel, count int){
 	if(tree.RootNode != nil) {
@@ -240,6 +293,13 @@ func (tree *PixelTree) Add(pixel Pixel, count int){
 		tree.RootNode = MakePixelTreeNode(pixel, count)
 	}
 
+	tree.IsFlat = false
+}
+
+func (tree *PixelTree) AddTree(nodes *PixelTree){
+	for _, node := range nodes.GetNodeSlice() {
+		tree.Add(node.Key, node.Count)
+	}
 }
 
 func (tree *PixelTree) GetNode(pixel Pixel) *PixelTreeNode{
@@ -248,7 +308,14 @@ func (tree *PixelTree) GetNode(pixel Pixel) *PixelTreeNode{
 	} else { //if tree empty
 		return nil
 	}
+}
 
+func (tree *PixelTree) Contains(pixel Pixel) bool{
+	if(tree.RootNode != nil) {
+		return tree.RootNode.Contains(pixel);
+	} else { //if tree empty
+		return false
+	}
 }
 
 func (tree *PixelTree) GetCount(pixel Pixel) (int, error){
@@ -257,6 +324,50 @@ func (tree *PixelTree) GetCount(pixel Pixel) (int, error){
 	} else { //if tree empty
 		return 0, errors.New("Tree empty.")
 	}
+}
+
+func (tree *PixelTree) Flatten() {
+	if(!tree.IsFlat){
+		tree.NodeSlice = tree.RootNode.GetNodeSlice()
+		tree.TotalCount = 0;
+		
+		for _, node := range tree.NodeSlice {
+			tree.TotalCount += int64(node.Count)
+		}
+		
+		tree.IsFlat = true
+	}
+}
+
+func (tree *PixelTree) GetNodeSlice() []PixelTreeNode {
+	if(!tree.IsFlat){
+		tree.Flatten()
+	}
+	
+	return tree.NodeSlice
+}
+
+func (tree *PixelTree) IsEmpty() bool {
+	return tree.RootNode == nil
+}
+
+func (tree *PixelTree) GetRandomPixel() Pixel {
+	if(!tree.IsFlat){
+		tree.Flatten()
+	}
+	
+	targetCount := RandomGen.Intn(int(tree.TotalCount)) //Get a random value
+	currentCount := 0;
+	
+	for _, node := range tree.NodeSlice {
+		if(targetCount >= currentCount && targetCount <= currentCount + node.Count){
+			return node.Key
+		} else {
+			currentCount += node.Count
+		}
+	}
+	
+	return tree.RootNode.Key
 }
 
 //Pixel
@@ -295,31 +406,31 @@ func (p *Pixel) IsEdge() bool{
 
 //SimplePixelData
 func (p *SimplePixelData) AddPixelBelow(pixel Pixel){
-	p.PixelBelow = append(p.PixelBelow, pixel)
+	p.PixelBelow.Add(pixel, 1)
 }
 
 func (p *SimplePixelData) AddPixelRight(pixel Pixel){
-	p.PixelRight = append(p.PixelRight, pixel)
+	p.PixelRight.Add(pixel, 1)
 }
 
 func (p *SimplePixelData) GetColor() Pixel {
 	return p.Color
 }
 
-func (p *SimplePixelData) GetPixelsBelow() []Pixel{
-	return p.PixelBelow
+func (p *SimplePixelData) GetPixelsBelow() *PixelTree{
+	return &p.PixelBelow
 }
 
-func (p *SimplePixelData) GetPixelsRight() []Pixel{
-	return p.PixelRight
+func (p *SimplePixelData) GetPixelsRight() *PixelTree{
+	return &p.PixelRight
 }
 
 func (p *SimplePixelData) GetRandomPixelBelow() Pixel{
-	return p.PixelBelow[RandomGen.Intn(len(p.PixelBelow))]
+	return p.PixelBelow.GetRandomPixel()
 }
 
 func (p *SimplePixelData) GetRandomPixelRight() Pixel{
-	return p.PixelRight[RandomGen.Intn(len(p.PixelRight))]
+	return p.PixelRight.GetRandomPixel()
 }
 
 //SimpleDataManager

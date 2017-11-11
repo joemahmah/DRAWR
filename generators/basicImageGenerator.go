@@ -89,7 +89,7 @@ func (generator *SimpleGenerator) Generate() error {
 	_ = upPixel
 	
 	//Container for all possible pixels
-	pixelPool := make([]containers.Pixel,0,0)
+	var pixelPool containers.PixelTree
 	
     for y := 0; y < boundsY; y++ {
 			//fmt.Println(y)
@@ -116,40 +116,44 @@ func (generator *SimpleGenerator) Generate() error {
 			leftData, _ := generator.Storage.GetPixelData(leftPixel)
 			upData, _ := generator.Storage.GetPixelData(upPixel)
 			
+			
+			//fmt.Println("Left: ", leftPixel, leftData,"\nUp: ", upPixel, upData)
+			//fmt.Println("Err: ", err)
+			
 			rightPixels := leftData.GetPixelsRight();
 			downPixels := upData.GetPixelsBelow();
 			
+			
 			if(UseNoexpGen){
-				pixelPool = append(pixelPool, rightPixels...)
-				pixelPool = append(pixelPool, downPixels...)
+				pixelPool.AddTree(rightPixels)
+				pixelPool.AddTree(downPixels)
 			
 			} else {
-				for _, data := range rightPixels {
-					if(containsPixel(downPixels, data)){
-						pixelPool = append(pixelPool, data)
+				for _, node := range rightPixels.GetNodeSlice() {
+					if(downPixels.Contains(node.Key)){
+						pixelPool.Add(node.Key, node.Count)
 					}
 				}
 				
-				if(len(pixelPool) == 0){
-					if(len(rightPixels) != 0){
-						pixelPool = append(pixelPool, rightPixels...)
-					} else if(len(downPixels) != 0) {
-						pixelPool = append(pixelPool, downPixels...)
+				if(pixelPool.IsEmpty()){
+					if(!rightPixels.IsEmpty()){
+						pixelPool.AddTree(rightPixels)
+					} else if(!downPixels.IsEmpty()) {
+						pixelPool.AddTree(downPixels)
 					} else { //No possible pixels
-						pixelPool = append(pixelPool, containers.Pixel{255,255,255,255,0}) //add white
+						pixelPool.Add(containers.Pixel{255,255,255,255,0},1) //add white
 					}
 				}
 			}
 			
 			
 			//fmt.Println(len(pixelPool))
-			randLoc := RandomGen.Intn(len(pixelPool))
-			currentPixel = pixelPool[randLoc]
+			currentPixel = pixelPool.GetRandomPixel()
 			
 			
 			generator.Img.(draw.Image).Set(x,y,convertPixelto32BitRGBA(currentPixel)) 
 			
-			pixelPool = pixelPool[:0] //Empty slice
+			pixelPool.RootNode = nil//Empty slice
         }
     }
 
