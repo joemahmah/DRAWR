@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	//"flag"
+	"flag"
+	"log"
 	//"io/ioutil"
+	//"os"
 	"github.com/joemahmah/DRAWR/containers"
 	"github.com/joemahmah/DRAWR/parsers"
 	"github.com/joemahmah/DRAWR/generators"
@@ -11,36 +13,43 @@ import (
 
 func main() {
 
-	testGen := generators.MakeSimpleGenerator(300,300) //testGen is pointer
-	var testPars parsers.SimpleParser
-	data := containers.MakeSimpleDataManager() //data is a pointer
+	var interactiveMode	bool
+	var sizeX 			int
+	var sizeY 			int
+	var inputPath 		string
+	var outputPath		string
 	
+	flag.BoolVar(&interactiveMode, "im", false, "Enable interactive mode.")
+	flag.BoolVar(&interactiveMode, "interactive", false, "Enable interactive mode.")
+	flag.IntVar(&sizeX, "x", 300, "Set image width (default 300).")
+	flag.IntVar(&sizeY, "y", 300, "Set image width (default 300).")
+	flag.StringVar(&inputPath, "i", "test.png", "Set input image (default test.png).")
+	flag.StringVar(&outputPath, "o", "imgOut.png", "Set output image (default imgOut.png).")
 	
-	testPars.SetStorage(*data)
-	err := testPars.LoadImage("test.png")
+	flag.Parse()
 	
-	if(err != nil){
-		fmt.Println("ERROR: ", err)
+	if(interactiveMode){
+		fmt.Println("Interactive mode not yet implemented.")
+	} else {
+		testGen := generators.MakeSimpleGenerator(sizeX,sizeY) //testGen is pointer
+		var testPars parsers.SimpleParser
+		data := containers.MakeSimpleDataManager() //data is a pointer
+		
+		
+		testPars.SetStorage(*data)
+		err := testPars.LoadImage(inputPath)
+		
+		if(err != nil){
+			log.Fatal(err)
+		}
+		
+		testPars.Parse()
+		
+		testGen.SetStorage(testPars.Storage)
+		
+		generators.UseNoexpGen = false;
+		
+		testGen.Generate()
+		testGen.SaveImage(outputPath)
 	}
-	
-	testPars.Parse()
-	
-	testGen.SetStorage(testPars.Storage)
-	
-	generators.UseNoexpGen = false;
-	
-	testGen.Generate()
-	testGen.SaveImage("imgOut.png")
-	
-	
-	//Decl Run Param Vars
-	//Interprate flags
-	
-	//open containers (if flag) OR create new container (if no flag)
-	//Parse images (if images specified)
-	//save to containers (if flag)
-	
-	//generate with generator setting (from flags)
-	//save image (flag for location, else use a default)
-
 }

@@ -25,6 +25,5 @@ DRAWR is written in Go (so you need a go compiler). DRAWR does not have any exte
 
 A simple `go build boot.go` should spit out an executable.
 
-
 ## License
 DRAWR is licensed under an MIT license.
