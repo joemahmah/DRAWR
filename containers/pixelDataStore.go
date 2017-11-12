@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/rand"
 	"time"
+	"io"
 	//"fmt"
 )
 
@@ -236,22 +237,20 @@ func (node *PixelTreeNode) GetCount(pixel Pixel) (int, error){
 	return 0, errors.New("Node does not exist.")
 }
 
-//returns the node with key pixel (if not exist, nil)
 func (node *PixelTreeNode) GetNodeSlice() []PixelTreeNode{
 	nodeSlice := make([]PixelTreeNode,0)
 	
 	if(node.LeftNode != nil){
-		nodeSlice = append(nodeSlice, *node.LeftNode)
+		nodeSlice = append(nodeSlice, node.LeftNode.GetNodeSlice()...)
 	}
 	
 	nodeSlice = append(nodeSlice, *node)
 	//fmt.Println("NODE: ", node.Key)
 	
 	if(node.RightNode != nil){
-		nodeSlice = append(nodeSlice, *node.RightNode)
+		nodeSlice = append(nodeSlice, node.RightNode.GetNodeSlice()...)
 	}
 	
-	//Should never hit here
 	return nodeSlice
 }
 
@@ -283,6 +282,18 @@ func (node *PixelTreeNode) Contains(pixel Pixel) bool{
 	
 	//Should never hit here
 	return false
+}
+
+func (node *PixelTreeNode) Print(writer io.Writer) {
+	node.LeftNode.Print(writer)
+	writer.Write([]byte(" "))
+	writer.Write([]byte(string(node.Key.R)))
+	writer.Write([]byte(string(node.Key.G)))
+	writer.Write([]byte(string(node.Key.B)))
+	writer.Write([]byte(string(node.Key.A)))
+	writer.Write([]byte(string(node.Key.Edge)))
+	writer.Write([]byte(" "))
+	node.RightNode.Print(writer)
 }
 
 //PixelTree
@@ -368,6 +379,12 @@ func (tree *PixelTree) GetRandomPixel() Pixel {
 	}
 	
 	return tree.RootNode.Key
+}
+
+func (tree *PixelTree) Print(writer io.Writer) {
+	writer.Write([]byte("{"))
+	tree.RootNode.Print(writer)
+	writer.Write([]byte("}"))
 }
 
 //Pixel
