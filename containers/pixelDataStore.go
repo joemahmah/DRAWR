@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"time"
 	"io"
-	//"fmt"
 )
 
 var RandomGen *rand.Rand
@@ -245,7 +244,6 @@ func (node *PixelTreeNode) GetNodeSlice() []PixelTreeNode{
 	}
 	
 	nodeSlice = append(nodeSlice, *node)
-	//fmt.Println("NODE: ", node.Key)
 	
 	if(node.RightNode != nil){
 		nodeSlice = append(nodeSlice, node.RightNode.GetNodeSlice()...)
@@ -338,16 +336,18 @@ func (tree *PixelTree) GetCount(pixel Pixel) (int, error){
 }
 
 func (tree *PixelTree) Flatten() {
-	if(!tree.IsFlat){
+	if(tree.RootNode != nil){
 		tree.NodeSlice = tree.RootNode.GetNodeSlice()
-		tree.TotalCount = 0;
-		
-		for _, node := range tree.NodeSlice {
-			tree.TotalCount += int64(node.Count)
-		}
-		
-		tree.IsFlat = true
+	} else {
+		tree.NodeSlice = make([]PixelTreeNode, 0)
 	}
+	tree.TotalCount = 0;
+	
+	for _, node := range tree.NodeSlice {
+		tree.TotalCount += int64(node.Count)
+	}
+	
+	tree.IsFlat = true
 }
 
 func (tree *PixelTree) GetNodeSlice() []PixelTreeNode {
