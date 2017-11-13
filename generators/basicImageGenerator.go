@@ -10,20 +10,30 @@ import (
 	"os"
 	"math/rand"
 	"time"
-	//"fmt"
+	"errors"
 )
 
-var RandomGen *rand.Rand
-var UseNoexpGen bool
+var (
+	RandomGen *rand.Rand
+)
+
+const (
+	SimpleGeneratorModeStandard int = 0
+	SimpleGeneratorModeExclusive int = 1
+	SimpleGeneratorModeMultiplicative int = 2
+	SimpleGeneratorModeSuperMultiplicative int = 3
+	SimpleGeneratorModeInverseMultiplicative int = 4
+	SimpleGeneratorModeInverseSuperMultiplicative int = 5
+)
 
 func init(){
 	RandomGen = rand.New(rand.NewSource(time.Now().UnixNano()))
-	UseNoexpGen = false;
 }
+
 
 type Generator interface{
 	SaveImage(string) error
-	Generate() error
+	Generate(int) error
 	
 	GetUpperBound() containers.Pixel
 	GetLeftBound() containers.Pixel
@@ -34,8 +44,12 @@ type SimpleGenerator struct {
 	Storage		containers.SimpleDataManager
 }
 
+
+
+/////////////
 /////////////
 //Functions//
+/////////////
 /////////////
 
 func convertPixelto32BitRGBA(pixel containers.Pixel) color.NRGBA{
@@ -54,8 +68,12 @@ func MakeSimpleGenerator(sizex, sizey int) *SimpleGenerator{
 	return sg
 }
 
+
+
+///////////
 ///////////
 //Methods//
+///////////
 ///////////
 
 func (generator *SimpleGenerator) SaveImage(path string) error {
@@ -75,7 +93,7 @@ func (generator *SimpleGenerator) SetStorage(storage containers.SimpleDataManage
 	generator.Storage = storage
 }
 
-func (generator *SimpleGenerator) Generate() error {
+func (generator *SimpleGenerator) Generate(generationMode int) error {
 	imageBounds := generator.Img.Bounds()
 	boundsX, boundsY := imageBounds.Max.X, imageBounds.Max.Y
 
@@ -90,6 +108,9 @@ func (generator *SimpleGenerator) Generate() error {
 	
 	//Container for all possible pixels
 	var pixelPool containers.PixelTree
+	
+	//temp var
+	var tempCount int
 	
     for y := 0; y < boundsY; y++ {
 			//fmt.Println(y)
@@ -124,11 +145,12 @@ func (generator *SimpleGenerator) Generate() error {
 			downPixels := upData.GetPixelsBelow();
 			
 			
-			if(UseNoexpGen){
+			switch generationMode{
+			case SimpleGeneratorModeStandard: //Don't force any type to be more common
 				pixelPool.AddTree(rightPixels)
 				pixelPool.AddTree(downPixels)
 			
-			} else {
+			case SimpleGeneratorModeExclusive: //Generate images with pixels exclusivly in both up and left (if unable to do so, just take the left/up)
 				for _, node := range rightPixels.GetNodeSlice() {
 					if(downPixels.Contains(node.Key)){
 						pixelPool.Add(node.Key, node.Count)
@@ -144,6 +166,96 @@ func (generator *SimpleGenerator) Generate() error {
 						pixelPool.Add(containers.Pixel{255,255,255,255,0},1) //add white
 					}
 				}
+				
+			case SimpleGeneratorModeMultiplicative: //Generate images with pixels both up and left being much more common (~100x multiplier)
+				for _, node := range rightPixels.GetNodeSlice() {
+					if(downPixels.Contains(node.Key)){
+						pixelPool.Add(node.Key, node.Count * 50)
+					} else {
+						pixelPool.Add(node.Key, node.Count)
+					}
+				}
+				
+				for _, node := range downPixels.GetNodeSlice() {
+					if(rightPixels.Contains(node.Key)){
+						pixelPool.Add(node.Key, node.Count * 50)
+					} else {
+						pixelPool.Add(node.Key, node.Count)
+					}
+				}
+				
+				
+			case SimpleGeneratorModeSuperMultiplicative: //Generate images with pixels both up and left being much, much more common (~2000x multiplier)
+				for _, node := range rightPixels.GetNodeSlice() {
+					if(downPixels.Contains(node.Key)){
+						pixelPool.Add(node.Key, node.Count * 1000)
+					} else {
+						pixelPool.Add(node.Key, node.Count)
+					}
+				}
+				
+				for _, node := range downPixels.GetNodeSlice() {
+					if(rightPixels.Contains(node.Key)){
+						pixelPool.Add(node.Key, node.Count * 1000)
+					} else {
+						pixelPool.Add(node.Key, node.Count)
+					}
+				}
+				
+			case SimpleGeneratorModeInverseMultiplicative: //Generate images with pixels both up and left being much less common (~1/5 multiplier)
+				for _, node := range rightPixels.GetNodeSlice() {
+					if(downPixels.Contains(node.Key)){
+						tempCount = node.Count / 10
+						if(tempCount <= 0){
+							tempCount = 1
+						}
+						pixelPool.Add(node.Key, tempCount)
+					} else {
+						pixelPool.Add(node.Key, node.Count)
+					}
+				}
+				
+				for _, node := range downPixels.GetNodeSlice() {
+					if(rightPixels.Contains(node.Key)){
+						tempCount = node.Count / 10
+						if(tempCount <= 0){
+							tempCount = 1
+						}
+						pixelPool.Add(node.Key, tempCount)
+					} else {
+						pixelPool.Add(node.Key, node.Count)
+					}
+				}
+				
+			case SimpleGeneratorModeInverseSuperMultiplicative: //Generate images with pixels both up and left being much, much less common (~1/250 multiplier)
+				for _, node := range rightPixels.GetNodeSlice() {
+					if(downPixels.Contains(node.Key)){
+						tempCount = node.Count / 500
+						if(tempCount <= 0){
+							tempCount = 1
+						}
+						pixelPool.Add(node.Key, tempCount)
+					} else {
+						pixelPool.Add(node.Key, node.Count)
+					}
+				}
+				
+				for _, node := range downPixels.GetNodeSlice() {
+					if(rightPixels.Contains(node.Key)){
+						tempCount = node.Count / 500
+						if(tempCount <= 0){
+							tempCount = 1
+						}
+						pixelPool.Add(node.Key, tempCount)
+					} else {
+						pixelPool.Add(node.Key, node.Count)
+					}
+				}
+				
+				
+			default:
+				return errors.New("Unknown generation mode!")
+				
 			}
 			
 			

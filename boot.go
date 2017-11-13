@@ -18,6 +18,7 @@ func main() {
 	var sizeY 			int
 	var inputPath 		string
 	var outputPath		string
+	var mode			int
 	
 	flag.BoolVar(&interactiveMode, "im", false, "Enable interactive mode.")
 	flag.BoolVar(&interactiveMode, "interactive", false, "Enable interactive mode.")
@@ -25,6 +26,8 @@ func main() {
 	flag.IntVar(&sizeY, "y", 300, "Set image width (default 300).")
 	flag.StringVar(&inputPath, "i", "test.png", "Set input image (default test.png).")
 	flag.StringVar(&outputPath, "o", "imgOut.png", "Set output image (default imgOut.png).")
+	flag.IntVar(&mode, "m", 0, "Sets the mode for the generator used (default to standard mode of 0). See README for list of modes with each generator.")
+	flag.IntVar(&mode, "mode", 0, "Sets the mode for the generator used (default to standard mode of 0). See README for list of modes with each generator.")
 	
 	flag.Parse()
 	
@@ -47,9 +50,7 @@ func main() {
 		
 		testGen.SetStorage(testPars.Storage)
 		
-		generators.UseNoexpGen = false;
-		
-		testGen.Generate()
+		testGen.Generate(mode)
 		testGen.SaveImage(outputPath)
 	}
 }

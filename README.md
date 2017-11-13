@@ -7,6 +7,8 @@ Some things that DRAWR can and can't do:
 * DRAWR is able to learn how to draw from images (jpg, png).
 * DRAWR is NOT able to actually understand what is sees in images (i.e. it cannot understand what a head is).
 
+As a warning, DRAWR IS VERY SLOW. One of the issues with DRAWR is that there are about 4 billion pixel combinations (about 16.5 million combinations without alpha); add on the generation method and it becomes really slow. DRAWR will take a long time if you are generating a very large image or the source image has a large number of unique pixels (colors).
+
 ## The Future of DRAWR
 I'd really like to expand the scope of DRAWR. Currently, the program uses a simple Markov algorithm to generat images.
 
@@ -24,6 +26,26 @@ Finally, I'd like to add a mode to let DRAWR look at source images more analytic
 DRAWR is written in Go (so you need a go compiler). DRAWR does not have any external dependencies.
 
 A simple `go build boot.go` should spit out an executable.
+
+## Using DRAWR
+DRAWR has three major components. Put together, they form the DRAWR executable. For the most part, you'll only need to really care for the generator compenent.
+
+If desired, you can use these components without the DRAWR front end. 
+
+### Generators
+Generators are the compenents that actually generate the image. Generators are designed to support multiple generation modes. Different generators are able to utilize different types of containers. This is done to allow for more flexible generators (i.e. for different types of data) as well as user defined generators.
+
+Currently, DRAWR has one generator implemented:
+* SimpleGenerator
+
+#### SimpleGenerator
+This generator is designed to handle only the data above and left. It has 6 modes:
+* 0 -- SimpleGeneratorModeStandard: Adds all data for the above and left pixel without doing any scaling.
+* 1 -- SimpleGeneratorModeExclusive: When possible, it will use only pixels that exist in data for both the above and left pixels. If not possible, it defaults to left pixel data then above pixel data. Great for patterns.
+* 2 -- SimpleGeneratorModeMultiplicative: Makes values which appear in data for both the upper and left pixels have a multiplicative bonus (about 100x bonus). 
+* 3 -- SimpleGeneratorModeSuperMultiplicative: Makes values which appear in data for both the upper and left pixels have a multiplicative bonus (about 2000x bonus). 
+* 4 -- SimpleGeneratorModeInverseMultiplicative: Makes values which appear in data for both the upper and left pixels have an inverse multiplicative bonus (about 1/5x bonus). Usually more chaotic.
+* 5 -- SimpleGeneratorModeInverseSuperMultiplicative: Makes values which appear in data for both the upper and left pixels have an inverse multiplicative bonus (about 1/250x bonus). Usually more chaotic.
 
 ## License
 DRAWR is licensed under an MIT license.
