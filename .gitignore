@@ -11,8 +11,8 @@
 *.out
 
 # Image Files
-.gif
-.jpg
-.jpeg
-.png
-.bmp
+*.gif
+*.jpg
+*.jpeg
+*.png
+*.bmp
