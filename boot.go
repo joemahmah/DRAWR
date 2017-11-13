@@ -9,11 +9,13 @@ import (
 	"github.com/joemahmah/DRAWR/containers"
 	"github.com/joemahmah/DRAWR/parsers"
 	"github.com/joemahmah/DRAWR/generators"
+	"time"
 )
 
 func main() {
-
+	
 	var interactiveMode	bool
+	var debugMode	bool
 	var sizeX 			int
 	var sizeY 			int
 	var inputPath 		string
@@ -22,6 +24,7 @@ func main() {
 	
 	flag.BoolVar(&interactiveMode, "im", false, "Enable interactive mode.")
 	flag.BoolVar(&interactiveMode, "interactive", false, "Enable interactive mode.")
+	flag.BoolVar(&debugMode, "debug", false, "Enable debug mode.")
 	flag.IntVar(&sizeX, "x", 300, "Set image width (default 300).")
 	flag.IntVar(&sizeY, "y", 300, "Set image width (default 300).")
 	flag.StringVar(&inputPath, "i", "test.png", "Set input image (default test.png).")
@@ -30,6 +33,8 @@ func main() {
 	flag.IntVar(&mode, "mode", 0, "Sets the mode for the generator used (default to standard mode of 0). See README for list of modes with each generator.")
 	
 	flag.Parse()
+	
+	start := time.Now()
 	
 	if(interactiveMode){
 		fmt.Println("Interactive mode not yet implemented.")
@@ -52,5 +57,10 @@ func main() {
 		
 		testGen.Generate(mode)
 		testGen.SaveImage(outputPath)
+	}
+	
+	if(debugMode){
+		elapsed := time.Since(start)
+		fmt.Println("Time: ", elapsed)
 	}
 }
