@@ -131,14 +131,14 @@ func (generator *SimpleGenerator) Generate(generationMode int) error {
 		
 			//Set left pixel
 			if(x == 0){
-				leftPixel = generator.GetLeftBound()
+				leftPixel = containers.GetLeftBound()
 			} else {
 				leftPixel = convert32BitRGBAtoPixel(generator.Img.At(x-1,y).RGBA())
 			}
 			
 			//Set up pixel
 			if(y == 0){
-				upPixel = generator.GetUpperBound()
+				upPixel = containers.GetUpperBound()
 			} else {
 				upPixel = convert32BitRGBAtoPixel(generator.Img.At(x,y-1).RGBA())
 			}
@@ -308,12 +308,4 @@ func containsPixel(slice []containers.Pixel, pix containers.Pixel) bool{
 	}
 	
 	return false;
-}
-
-func (generator *SimpleGenerator) GetUpperBound() containers.Pixel {
-	return containers.Pixel{0,0,0,0,2}
-}
-
-func (generator *SimpleGenerator) GetLeftBound() containers.Pixel {
-	return containers.Pixel{0,0,0,0,1}
 }
