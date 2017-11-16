@@ -34,6 +34,7 @@ func init(){
 type Generator interface{
 	SaveImage(string) error
 	Generate(int) error
+	SetSize(int,int)
 	
 	GetUpperBound() containers.Pixel
 	GetLeftBound() containers.Pixel
@@ -75,6 +76,10 @@ func MakeSimpleGenerator(sizex, sizey int) *SimpleGenerator{
 //Methods//
 ///////////
 ///////////
+
+func (generator *SimpleGenerator) SetSize(sizeX, sizeY int) {
+	generator.Img = image.NewRGBA(image.Rect(0, 0, sizeX, sizeY))
+}
 
 func (generator *SimpleGenerator) SaveImage(path string) error {
 	imageFile, err := os.Create(path)
