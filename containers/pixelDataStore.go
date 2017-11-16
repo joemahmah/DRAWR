@@ -47,10 +47,12 @@ type PixelTree struct {
 type PixelData interface{
 	AddPixelBelow(Pixel)
 	AddPixelRight(Pixel)
-	GetPixelsBelow() *PixelTree
-	GetPixelsRight() *PixelTree
-	GetRandomPixelBelow() Pixel
-	GetRandomPixelRight() Pixel
+	GetPixelsBelow() 			*PixelTree
+	GetPixelsRight() 			*PixelTree
+	GetPixelsAt(int,int) 		*PixelTree
+	GetRandomPixelBelow() 		Pixel
+	GetRandomPixelRight() 		Pixel
+	GetRandomPixelAt(int,int)	Pixel
 	
 	GetColor() Pixel
 }
@@ -442,11 +444,30 @@ func (p *SimplePixelData) GetPixelsRight() *PixelTree{
 	return &p.PixelRight
 }
 
+//Since SimplePixelData only has above and below, this
+//method is only present to satisfy the interface
+//If the y value is >0, returns below else right
+func (p *SimplePixelData) GetPixelsAt(x, y int) *PixelTree{
+	if(y > 0){
+		return &p.PixelBelow
+	}
+	
+	return &p.PixelRight
+}
+
 func (p *SimplePixelData) GetRandomPixelBelow() Pixel{
 	return p.PixelBelow.GetRandomPixel()
 }
 
 func (p *SimplePixelData) GetRandomPixelRight() Pixel{
+	return p.PixelRight.GetRandomPixel()
+}
+
+func (p *SimplePixelData) GetRandomPixelAt(x, y int) Pixel{
+	if(y > 0){
+		return p.PixelBelow.GetRandomPixel()
+	}
+	
 	return p.PixelRight.GetRandomPixel()
 }
 
