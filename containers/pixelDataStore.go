@@ -47,6 +47,7 @@ type PixelTree struct {
 type PixelData interface{
 	AddPixelBelow(Pixel)
 	AddPixelRight(Pixel)
+	AddPixelAt(int,int,Pixel)
 	GetPixelsBelow() 			*PixelTree
 	GetPixelsRight() 			*PixelTree
 	GetPixelsAt(int,int) 		*PixelTree
@@ -54,13 +55,19 @@ type PixelData interface{
 	GetRandomPixelRight() 		Pixel
 	GetRandomPixelAt(int,int)	Pixel
 	
-	GetColor() Pixel
+	GetColor() 					Pixel
 }
 
 type SimplePixelData struct {
 	PixelBelow	PixelTree
 	PixelRight	PixelTree
 	
+	Color		Pixel
+}
+
+type SimpleGridPixelData struct {
+	Pixels		[][]PixelTree
+
 	Color		Pixel
 }
 
@@ -73,6 +80,10 @@ type SimpleDataManager struct {
 	Data		map[Pixel]*SimplePixelData
 }
 
+type SimpleGridDataManager struct {
+	Data		map[Pixel]*SimpleGridPixelData
+}
+
 /////////////
 //Functions//
 /////////////
@@ -82,6 +93,23 @@ func MakeSimpleDataManager() *SimpleDataManager{
 	sdm.Data = make(map[Pixel]*SimplePixelData)
 	
 	return sdm
+}
+
+func MakeSimpleGridDataManager() *SimpleGridDataManager{
+	sgdm := new(SimpleGridDataManager)
+	sgdm.Data = make(map[Pixel]*SimpleGridPixelData)
+	
+	return sgdm
+}
+
+func MakeSimpleGridPixelData() *SimpleGridPixelData{
+	sgpd := new(SimpleGridPixelData)
+	sgpd.Pixels = make([][]PixelTree, 2)
+	for idx := range sgpd.Pixels {
+		sgpd.Pixels[idx] = make([]PixelTree, 2)
+	}
+	
+	return sgpd
 }
 
 func MakePixelTreeNode(pixel Pixel, count int) *PixelTreeNode{
@@ -432,6 +460,14 @@ func (p *SimplePixelData) AddPixelRight(pixel Pixel){
 	p.PixelRight.Add(pixel, 1)
 }
 
+func (p *SimplePixelData) AddPixelAt(x int, y int, pixel Pixel){
+	if(y > 0){
+		p.PixelBelow.Add(pixel, 1)
+	} else {
+		p.PixelRight.Add(pixel, 1)
+	}
+}
+
 func (p *SimplePixelData) GetColor() Pixel {
 	return p.Color
 }
@@ -471,6 +507,47 @@ func (p *SimplePixelData) GetRandomPixelAt(x, y int) Pixel{
 	return p.PixelRight.GetRandomPixel()
 }
 
+//SimpleGridPixelData
+func (p *SimpleGridPixelData) AddPixelBelow(pixel Pixel){
+	p.Pixels[1][0].Add(pixel, 1)
+}
+
+func (p *SimpleGridPixelData) AddPixelRight(pixel Pixel){
+	p.Pixels[0][1].Add(pixel, 1)
+}
+
+func (p *SimpleGridPixelData) AddPixelAt(x int ,y int, pixel Pixel){
+	p.Pixels[y][x].Add(pixel, 1)
+}
+
+func (p *SimpleGridPixelData) GetColor() Pixel {
+	return p.Color
+}
+
+func (p *SimpleGridPixelData) GetPixelsBelow() *PixelTree{
+	return &p.Pixels[1][0]
+}
+
+func (p *SimpleGridPixelData) GetPixelsRight() *PixelTree{
+	return &p.Pixels[0][1]
+}
+
+func (p *SimpleGridPixelData) GetPixelsAt(x, y int) *PixelTree{
+	return &p.Pixels[y][x]
+}
+
+func (p *SimpleGridPixelData) GetRandomPixelBelow() Pixel{
+	return p.Pixels[1][0].GetRandomPixel()
+}
+
+func (p *SimpleGridPixelData) GetRandomPixelRight() Pixel{
+	return p.Pixels[0][1].GetRandomPixel()
+}
+
+func (p *SimpleGridPixelData) GetRandomPixelAt(x, y int) Pixel {
+	return p.Pixels[y][x].GetRandomPixel()
+}
+
 //SimpleDataManager
 func (dm *SimpleDataManager) GetPixelData(pixel Pixel) (PixelData,error) {
 	pixelData, exists := dm.Data[pixel]
@@ -487,6 +564,29 @@ func (dm *SimpleDataManager) GetPixelDataCreateIfNotExist(pixel Pixel) PixelData
 	
 	if(!exists){
 		dm.Data[pixel] = new(SimplePixelData)
+		pixelData, _ = dm.Data[pixel]
+	}
+	
+	
+	return pixelData
+}
+
+//SimpleGridDataManager
+func (dm *SimpleGridDataManager) GetPixelData(pixel Pixel) (PixelData,error) {
+	pixelData, exists := dm.Data[pixel]
+	
+	if(!exists){
+		return nil,errors.New("Pixel has not been stored")
+	}
+	
+	return pixelData,nil
+}
+
+func (dm *SimpleGridDataManager) GetPixelDataCreateIfNotExist(pixel Pixel) PixelData{
+	pixelData, exists := dm.Data[pixel]
+	
+	if(!exists){
+		dm.Data[pixel] = MakeSimpleGridPixelData()
 		pixelData, _ = dm.Data[pixel]
 	}
 	
