@@ -1,5 +1,9 @@
 package containers
 
+func GetInvalidPixel() Pixel {
+	return Pixel{255,255,255,255,255}
+}
+
 func GetUpperBound() Pixel {
 	return Pixel{0,0,0,0,128}
 }

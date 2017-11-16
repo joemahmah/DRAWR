@@ -39,9 +39,9 @@ func main() {
 	if(interactiveMode){
 		fmt.Println("Interactive mode not yet implemented.")
 	} else {
-		testGen := generators.MakeSimpleGenerator(sizeX,sizeY) //testGen is pointer
-		var testPars parsers.SimpleParser
-		data := containers.MakeSimpleDataManager() //data is a pointer
+		testGen := generators.MakeSimpleGridGenerator(sizeX,sizeY) //testGen is pointer
+		var testPars parsers.SimpleGridParser
+		data := containers.MakeSimpleGridDataManager() //data is a pointer
 		
 		
 		testPars.SetStorage(*data)
